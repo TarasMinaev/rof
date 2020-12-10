@@ -30,20 +30,24 @@ def resize_image(bucket_name, key, size):
 
     img = Image.open(BytesIO(obj_body))
     img_width, img_height = img.size
-    img_ratio = int(size_split[0]) * int(img_height)
-    img_ratio //= int(img_width)
+    if int(size_split[0]) >= int(img_width) :
+        img_height_output = int(img_height)
+        img_width_output = int(img_width)
+    else:
+       img_width_output = int(size_split[0]) 
+       img_height_output = int(size_split[0]) * int(img_height)
+       img_height_output //= int(img_width)
+
+
     img = img.resize(
-        (int(size_split[0]), img_ratio), PIL.Image.ANTIALIAS
+        (img_width_output, img_height_output), PIL.Image.ANTIALIAS
     )    
-    
-    # img = img.resize(
-    #     (int(size_split[0]), int(size_split[1])), PIL.Image.ANTIALIAS
-    # )
+
     buffer = BytesIO()
     img.save(buffer, file_ext.upper())
     buffer.seek(0)
     
-    new_size = str(size_split[0]) + 'x' + str(img_ratio)
+    new_size = str(img_width_output) + 'x' + str(img_height_output)
     resized_key="{size}_{key}".format(size=new_size, key=key)
     obj = s3.Object(
         bucket_name=bucket_name,
